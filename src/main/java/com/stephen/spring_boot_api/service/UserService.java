@@ -17,6 +17,9 @@ public class UserService {
 
     public User createUser(UserCreationRequest request) {
         User user = new User();
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("User already exists");
+        }
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
@@ -41,6 +44,7 @@ public class UserService {
         user.setDateOfBirth(request.getDateOfBirth());
         return userRepository.save(user);
     }
+
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
