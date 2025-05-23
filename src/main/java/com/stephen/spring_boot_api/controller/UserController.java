@@ -1,5 +1,6 @@
 package com.stephen.spring_boot_api.controller;
 
+import com.stephen.spring_boot_api.dto.ApiResponse;
 import com.stephen.spring_boot_api.dto.request.UserCreationRequest;
 import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
 import com.stephen.spring_boot_api.entity.User;
@@ -27,8 +28,10 @@ public class UserController {
 
     // we already defined the request mapping above, so no need to define it here
     @PostMapping()
-    public User createUser(@RequestBody @Valid UserCreationRequest request) {
-        return userService.createUser(request);
+    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setData(userService.createUser(request));
+        return apiResponse;
     }
 
     @GetMapping()
