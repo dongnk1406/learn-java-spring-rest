@@ -5,6 +5,8 @@ import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
 import com.stephen.spring_boot_api.entity.User;
 import com.stephen.spring_boot_api.service.UserService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,7 @@ public class UserController {
 
     // we already defined the request mapping above, so no need to define it here
     @PostMapping()
-    public User createUser(@RequestBody UserCreationRequest request) {
+    public User createUser(@RequestBody @Valid UserCreationRequest request) {
         return userService.createUser(request);
     }
 
