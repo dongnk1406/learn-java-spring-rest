@@ -1,7 +1,8 @@
 package com.stephen.spring_boot_api.exception;
 
 public enum ErrorCode {
-    USER_EXITED(1001, "User existed");
+    USER_EXITED(1001, "User existed"),
+    UNCATEGORIZED_EXCEPTION(1002, "Uncategorized exception");
 
     // constructor
     ErrorCode(int code, String message) {

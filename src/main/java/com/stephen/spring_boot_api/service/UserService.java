@@ -3,6 +3,8 @@ package com.stephen.spring_boot_api.service;
 import com.stephen.spring_boot_api.dto.request.UserCreationRequest;
 import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
 import com.stephen.spring_boot_api.entity.User;
+import com.stephen.spring_boot_api.exception.AppException;
+import com.stephen.spring_boot_api.exception.ErrorCode;
 import com.stephen.spring_boot_api.repository.UserRepository;
 
 import java.util.List;
@@ -18,7 +20,7 @@ public class UserService {
     public User createUser(UserCreationRequest request) {
         User user = new User();
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("User already exists");
+            throw new AppException(ErrorCode.USER_EXITED);
         }
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());

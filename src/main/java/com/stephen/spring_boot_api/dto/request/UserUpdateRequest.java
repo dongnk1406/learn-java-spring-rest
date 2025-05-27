@@ -2,6 +2,7 @@ package com.stephen.spring_boot_api.dto.request;
 
 import java.time.LocalDate;
 
+// Don't use lambok
 public class UserUpdateRequest {
     private String password;
     private String firstName;
