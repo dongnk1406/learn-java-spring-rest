@@ -28,7 +28,6 @@ public class UserController {
         this.userService = userService;
     }
 
-
     // we already defined the request mapping above, so no need to define it here
     @PostMapping()
     public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
