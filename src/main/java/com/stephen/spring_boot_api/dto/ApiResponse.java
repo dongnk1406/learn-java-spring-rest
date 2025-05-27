@@ -2,6 +2,7 @@ package com.stephen.spring_boot_api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+// Don't use lambok
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private int code = 200;
