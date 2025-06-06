@@ -31,10 +31,10 @@ import com.stephen.spring_boot_api.repository.UserRepository;
 @Service
 public class AuthenticationService {
     private UserRepository userRepository;
-    
+
     // @Value is used to get value from application.properties
     @Value("${jwt.signerKey}")
-    protected static String SIGNER_KEY;
+    protected String SIGNER_KEY;
 
     public AuthenticationService(UserRepository userRepository) {
         this.userRepository = userRepository;
