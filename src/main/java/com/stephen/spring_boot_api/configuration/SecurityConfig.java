@@ -10,11 +10,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final String[] PUBLIC_ENDPOINTS = { "/users", "/auth/token", "/auth/introspect" };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.POST, "/users").permitAll()
-                .anyRequest().authenticated());
+        httpSecurity.authorizeHttpRequests(
+                requests -> requests.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        .anyRequest().authenticated());
 
         httpSecurity.csrf(httpSecurityCsrfConfig -> httpSecurityCsrfConfig.disable());
 
