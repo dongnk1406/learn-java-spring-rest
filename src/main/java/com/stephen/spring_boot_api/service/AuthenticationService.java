@@ -4,11 +4,13 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -24,6 +26,7 @@ import com.stephen.spring_boot_api.dto.request.AuthenticationRequest;
 import com.stephen.spring_boot_api.dto.request.IntrospectRequest;
 import com.stephen.spring_boot_api.dto.response.AuthenticationResponse;
 import com.stephen.spring_boot_api.dto.response.IntrospectResponse;
+import com.stephen.spring_boot_api.entity.User;
 import com.stephen.spring_boot_api.exception.AppException;
 import com.stephen.spring_boot_api.exception.ErrorCode;
 import com.stephen.spring_boot_api.repository.UserRepository;
@@ -49,19 +52,19 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         var authenticatedResponse = new AuthenticationResponse();
-        var accessToken = generateAccessToken(user.getUsername());
+        var accessToken = generateAccessToken(user);
         authenticatedResponse.setAuthenticated(authenticated);
         authenticatedResponse.setAccessToken(accessToken);
 
         return authenticatedResponse;
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(username).issuer("com.stephen")
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer("com.stephen")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
-                .claim("customClaim", "customValue")
+                .claim("scope", buildScope(user))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(jwsHeader, payload);
@@ -84,6 +87,14 @@ public class AuthenticationService {
         var introspectResponse = new IntrospectResponse();
         introspectResponse.setValid(valid);
         return introspectResponse;
+    }
+
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(role -> stringJoiner.add(role));
+        }
+        return stringJoiner.toString();
     }
 
 }
