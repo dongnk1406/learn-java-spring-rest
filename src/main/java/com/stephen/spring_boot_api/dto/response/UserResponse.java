@@ -1,6 +1,7 @@
 package com.stephen.spring_boot_api.dto.response;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,4 +14,5 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
+    Set<String> roles;
 }

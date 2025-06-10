@@ -1,24 +1,27 @@
 package com.stephen.spring_boot_api.service;
 
+import java.util.HashSet;
+import java.util.List;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.stephen.spring_boot_api.dto.request.UserCreationRequest;
 import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
 import com.stephen.spring_boot_api.entity.User;
+import com.stephen.spring_boot_api.enums.Role;
 import com.stephen.spring_boot_api.exception.AppException;
 import com.stephen.spring_boot_api.exception.ErrorCode;
 import com.stephen.spring_boot_api.repository.UserRepository;
 
-import java.util.List;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 @Service
 public class UserService {
     private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User createUser(UserCreationRequest request) {
@@ -30,8 +33,10 @@ public class UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setDateOfBirth(request.getDateOfBirth());
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        HashSet<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
+        user.setRoles(roles);
         return userRepository.save(user);
     }
 
