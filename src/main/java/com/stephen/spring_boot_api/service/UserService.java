@@ -3,6 +3,8 @@ package com.stephen.spring_boot_api.service;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,10 +42,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<User> getUsers() {
         return userRepository.findAll();
     }
 
+    @PostAuthorize("hasRole('ADMIN')")
     public User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
