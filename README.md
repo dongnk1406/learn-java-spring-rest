@@ -8,3 +8,6 @@ Khóa học Java spring boot 3 By Devteria
 docker compose up -d
 
 30/05/2025: Mã hóa mật khẩu an toàn và matching nhanh chóng với Bcrypt
+
+PreAuthorize: kiểm tra thoả mãn điều kiện rồi mới vào method để thực hiện -> được dùng nhiều hơn
+PostAuthorize: thực hiện method, rồi mới kiểm tra, nếu thoả mãn thì trả về kết quả

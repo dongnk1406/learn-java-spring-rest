@@ -3,6 +3,7 @@ package com.stephen.spring_boot_api.controller;
 import com.stephen.spring_boot_api.dto.ApiResponse;
 import com.stephen.spring_boot_api.dto.request.UserCreationRequest;
 import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
+import com.stephen.spring_boot_api.dto.response.UserResponse;
 import com.stephen.spring_boot_api.entity.User;
 import com.stephen.spring_boot_api.service.UserService;
 
@@ -41,6 +42,11 @@ public class UserController {
         ApiResponse<List<User>> apiResponse = new ApiResponse<>();
         apiResponse.setData(userService.getUsers());
         return apiResponse;
+    }
+
+    @GetMapping("/myInfo")
+    public UserResponse getMyInfo() {
+        return userService.getMyInfo();
     }
 
     @GetMapping("/{userId}")
