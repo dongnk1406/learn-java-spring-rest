@@ -1,6 +1,7 @@
 package com.stephen.spring_boot_api.dto.request;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,4 +17,6 @@ public class UserCreationRequest {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
+    private List<String> roles;
+
 }

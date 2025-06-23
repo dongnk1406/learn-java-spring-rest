@@ -73,11 +73,13 @@ public class User {
         this.dateOfBirth = dateOfBirth;
     }
 
-    // public Set<Role> getRoles() {
-    // return roles;
-    // }
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
-    // public void setRoles(Set<Role> roles) {
-    // this.roles = roles;
-    // }
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    
 }

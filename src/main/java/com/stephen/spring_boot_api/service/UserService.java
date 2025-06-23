@@ -2,6 +2,7 @@ package com.stephen.spring_boot_api.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,21 +12,25 @@ import org.springframework.stereotype.Service;
 
 import com.stephen.spring_boot_api.dto.request.UserCreationRequest;
 import com.stephen.spring_boot_api.dto.request.UserUpdateRequest;
+import com.stephen.spring_boot_api.dto.response.PermissionResponse;
+import com.stephen.spring_boot_api.dto.response.RoleResponse;
 import com.stephen.spring_boot_api.dto.response.UserResponse;
 import com.stephen.spring_boot_api.entity.User;
-import com.stephen.spring_boot_api.enums.Role;
 import com.stephen.spring_boot_api.exception.AppException;
 import com.stephen.spring_boot_api.exception.ErrorCode;
+import com.stephen.spring_boot_api.repository.RoleRepository;
 import com.stephen.spring_boot_api.repository.UserRepository;
 
 @Service
 public class UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     public User createUser(UserCreationRequest request) {
@@ -38,9 +43,8 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setDateOfBirth(request.getDateOfBirth());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
-        // user.setRoles(roles);
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
         return userRepository.save(user);
     }
 
@@ -49,17 +53,23 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    // use hasRole to check permission
     @PostAuthorize("hasRole('ADMIN') or returnObject.username == authentication.name")
     public User getUser(String userId) {
         return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // use hasAuthority to check permission
+    @PreAuthorize("hasAuthority('UPDATE_DATA')")
     public User updateUser(String userId, UserUpdateRequest request) {
         User user = getUser(userId);
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setDateOfBirth(request.getDateOfBirth());
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
+
         return userRepository.save(user);
     }
 
@@ -79,7 +89,18 @@ public class UserService {
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setDateOfBirth(user.getDateOfBirth());
-        // userResponse.setRoles(user.getRoles());
+        userResponse.setRoles(user.getRoles().stream().map(role -> {
+            RoleResponse roleResponse = new RoleResponse();
+            roleResponse.setName(role.getName());
+            roleResponse.setDescription(role.getDescription());
+            roleResponse.setPermissions(role.getPermissions().stream().map(permission -> {
+                PermissionResponse permissionResponse = new PermissionResponse();
+                permissionResponse.setName(permission.getName());
+                permissionResponse.setDescription(permission.getDescription());
+                return permissionResponse;
+            }).collect(Collectors.toSet()));
+            return roleResponse;
+        }).collect(Collectors.toSet()));
         return userResponse;
     }
 }
