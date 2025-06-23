@@ -41,7 +41,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         HashSet<String> roles = new HashSet<>();
         roles.add(Role.USER.name());
-        user.setRoles(roles);
+        // user.setRoles(roles);
         return userRepository.save(user);
     }
 
@@ -80,7 +80,7 @@ public class UserService {
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setDateOfBirth(user.getDateOfBirth());
-        userResponse.setRoles(user.getRoles());
+        // userResponse.setRoles(user.getRoles());
         return userResponse;
     }
 }

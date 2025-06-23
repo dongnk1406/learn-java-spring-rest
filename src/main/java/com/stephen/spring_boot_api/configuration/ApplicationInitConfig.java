@@ -28,7 +28,7 @@ public class ApplicationInitConfig {
                 user.setPassword(passwordEncoder.encode("admin"));
                 HashSet<String> roles = new HashSet<>();
                 roles.add(Role.ADMIN.name());
-                user.setRoles(roles);
+                // user.setRoles(roles);
                 userRepository.save(user);
             }
         };

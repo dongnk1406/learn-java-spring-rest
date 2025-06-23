@@ -4,11 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.ManyToMany;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,7 +21,9 @@ public class User {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
-    Set<String> roles;
+
+    @ManyToMany
+    Set<Role> roles;
 
     public String getId() {
         return id;
@@ -68,13 +73,11 @@ public class User {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Set<String> getRoles() {
-        return roles;
-    }
+    // public Set<Role> getRoles() {
+    // return roles;
+    // }
 
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
-
-    
+    // public void setRoles(Set<Role> roles) {
+    // this.roles = roles;
+    // }
 }
