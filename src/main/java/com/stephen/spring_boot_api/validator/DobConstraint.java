@@ -15,7 +15,7 @@ import jakarta.validation.Payload;
 @Constraint(validatedBy = {DobValidator.class})
 public @interface DobConstraint {
     // 3 methods to define annotation
-    String message() default "Invalid date of birth";
+    String message() default "The age must be between {min} and {max}";
 
     Class<?>[] groups() default {};
 

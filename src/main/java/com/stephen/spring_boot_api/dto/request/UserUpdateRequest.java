@@ -16,7 +16,7 @@ public class UserUpdateRequest {
     private String password;
     private String firstName;
     private String lastName;
-    @DobConstraint(min = 18, max = 100)
+    @DobConstraint(min = 16, max = 100)
     private LocalDate dateOfBirth;
     private List<String> roles;
 }
