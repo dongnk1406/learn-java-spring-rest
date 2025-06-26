@@ -26,6 +26,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.stephen.spring_boot_api.dto.request.AuthenticationRequest;
 import com.stephen.spring_boot_api.dto.request.IntrospectRequest;
 import com.stephen.spring_boot_api.dto.request.LogoutRequest;
+import com.stephen.spring_boot_api.dto.request.RefreshTokenRequest;
 import com.stephen.spring_boot_api.dto.response.AuthenticationResponse;
 import com.stephen.spring_boot_api.dto.response.IntrospectResponse;
 import com.stephen.spring_boot_api.entity.InvalidatedToken;
@@ -138,6 +139,28 @@ public class AuthenticationService {
         invalidatedToken.setId(jwtTokenId);
         invalidatedToken.setExpiryTime(jwtExpiryTime);
         invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws JOSEException, ParseException {
+        var signJwt = verifyToken(request.getToken());
+        String jwtTokenId = signJwt.getJWTClaimsSet().getJWTID();
+        Date jwtExpiryTime = signJwt.getJWTClaimsSet().getExpirationTime();
+
+        // invalidate token by adding to invalidatedToken table
+        InvalidatedToken invalidatedToken = new InvalidatedToken();
+        invalidatedToken.setId(jwtTokenId);
+        invalidatedToken.setExpiryTime(jwtExpiryTime);
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        // generate new access token for user
+        String userName = signJwt.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        String accessToken = generateAccessToken(user);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse();
+        authenticationResponse.setAccessToken(accessToken);
+        authenticationResponse.setAuthenticated(true);
+        return authenticationResponse;
     }
 
 }

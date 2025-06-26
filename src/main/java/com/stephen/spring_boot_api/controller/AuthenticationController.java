@@ -12,6 +12,7 @@ import com.stephen.spring_boot_api.dto.ApiResponse;
 import com.stephen.spring_boot_api.dto.request.AuthenticationRequest;
 import com.stephen.spring_boot_api.dto.request.IntrospectRequest;
 import com.stephen.spring_boot_api.dto.request.LogoutRequest;
+import com.stephen.spring_boot_api.dto.request.RefreshTokenRequest;
 import com.stephen.spring_boot_api.dto.response.AuthenticationResponse;
 import com.stephen.spring_boot_api.dto.response.IntrospectResponse;
 import com.stephen.spring_boot_api.service.AuthenticationService;
@@ -46,6 +47,16 @@ public class AuthenticationController {
     public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         authenticationService.logout(request);
+        return apiResponse;
+    }
+
+    @PostMapping("/refreshToken")
+    public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenRequest request)
+            throws JOSEException, ParseException {
+
+        AuthenticationResponse authenticationResponse = authenticationService.refreshToken(request);
+        ApiResponse<AuthenticationResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setData(authenticationResponse);
         return apiResponse;
     }
 
