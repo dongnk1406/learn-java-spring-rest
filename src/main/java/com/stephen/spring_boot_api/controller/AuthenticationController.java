@@ -11,6 +11,7 @@ import com.nimbusds.jose.JOSEException;
 import com.stephen.spring_boot_api.dto.ApiResponse;
 import com.stephen.spring_boot_api.dto.request.AuthenticationRequest;
 import com.stephen.spring_boot_api.dto.request.IntrospectRequest;
+import com.stephen.spring_boot_api.dto.request.LogoutRequest;
 import com.stephen.spring_boot_api.dto.response.AuthenticationResponse;
 import com.stephen.spring_boot_api.dto.response.IntrospectResponse;
 import com.stephen.spring_boot_api.service.AuthenticationService;
@@ -38,6 +39,13 @@ public class AuthenticationController {
         ApiResponse<IntrospectResponse> apiResponse = new ApiResponse<>();
         var introspectResponse = authenticationService.introspect(request);
         apiResponse.setData(introspectResponse);
+        return apiResponse;
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException {
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        authenticationService.logout(request);
         return apiResponse;
     }
 

@@ -11,3 +11,6 @@ docker compose up -d
 
 PreAuthorize: kiểm tra thoả mãn điều kiện rồi mới vào method để thực hiện -> được dùng nhiều hơn
 PostAuthorize: thực hiện method, rồi mới kiểm tra, nếu thoả mãn thì trả về kết quả
+
+*** Logout flow
+- lưu token đã logout
