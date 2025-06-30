@@ -44,3 +44,9 @@ VD: hiện tại đang kết nối với CSDL bên ngoài -> vói isolation, ta 
 ## Format code using Spotless
 mvn spotless:check
 mvn spotless:apply
+
+## Code coverage using JaCoCo
+for some reason, we need to open db first. Let's fix it later in unit test using Isolation
+./mvnw test jacoco:report
+
+go to target/site/index.html to see the test report
