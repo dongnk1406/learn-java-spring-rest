@@ -50,3 +50,12 @@ for some reason, we need to open db first. Let's fix it later in unit test using
 ./mvnw test jacoco:report
 
 go to target/site/index.html to see the test report
+
+## Code quality with SonarLint & SonarQube
+`docker run --name sonar-qube -p 9000:9000 -d sonarqube:lts-community`
+
+username:admin
+password: root
+
+- access localhost:9000, generate token and cmd
+- run that sonarqube cmd in the command prompt
