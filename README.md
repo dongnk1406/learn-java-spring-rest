@@ -33,3 +33,10 @@ PostAuthorize: thực hiện method, rồi mới kiểm tra, nếu thoả mãn t
 
 ## Logout flow
 - lưu token đã logout
+
+## Isolation trong UnitTest, best practice trong Unit test
+Isolation là unit test có thể chạy trên bất cứ môi trường nào, mà không cần service bên ngoài
+=> solution: sử dụng h2 database
+- Hiện tại đang có logic sẽ khoẻ tạo tài khoản admin khi init. Nhưng có lỗi phần đó
+=> solution: sử dụng ConditionalOnProperty để tạo điều kiện chi khởi tạo @Bean
+VD: hiện tại đang kết nối với CSDL bên ngoài -> vói isolation, ta có thể chạy unit test mà k cần kết nối
