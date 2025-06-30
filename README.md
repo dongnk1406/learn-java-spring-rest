@@ -16,6 +16,7 @@ This microservice is responsible for:
 
 ## Start application
 `docker compose up -d`
+`mvn install`
 `mvn spring-boot:run`
 
 ## Build application
@@ -42,12 +43,12 @@ Isolation là unit test có thể chạy trên bất cứ môi trường nào, m
 VD: hiện tại đang kết nối với CSDL bên ngoài -> vói isolation, ta có thể chạy unit test mà k cần kết nối
 
 ## Format code using Spotless
-mvn spotless:check
-mvn spotless:apply
+`mvn spotless:check`
+`mvn spotless:apply`
 
 ## Code coverage using JaCoCo
 for some reason, we need to open db first. Let's fix it later in unit test using Isolation
-./mvnw test jacoco:report
+`./mvnw test jacoco:report`
 
 go to target/site/index.html to see the test report
 
@@ -59,3 +60,7 @@ password: root
 
 - access localhost:9000, generate token and cmd
 - run that sonarqube cmd in the command prompt
+
+## Swagger
+Reference: https://www.youtube.com/watch?v=VYvqF-J2JFc
+http://localhost:8080/identity/swagger-ui/index.html
