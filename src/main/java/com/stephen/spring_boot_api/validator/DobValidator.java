@@ -27,5 +27,4 @@ public class DobValidator implements ConstraintValidator<DobConstraint, LocalDat
         min = constraintAnnotation.min();
         max = constraintAnnotation.max();
     }
-
 }

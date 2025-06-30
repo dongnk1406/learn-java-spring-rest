@@ -59,5 +59,4 @@ public class AuthenticationController {
         apiResponse.setData(authenticationResponse);
         return apiResponse;
     }
-
 }

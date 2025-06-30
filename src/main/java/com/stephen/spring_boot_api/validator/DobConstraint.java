@@ -10,7 +10,7 @@ import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 // use @interface to define annotation
-@Target({ FIELD })
+@Target({FIELD})
 @Retention(RUNTIME)
 @Constraint(validatedBy = {DobValidator.class})
 public @interface DobConstraint {
@@ -21,7 +21,7 @@ public @interface DobConstraint {
 
     Class<? extends Payload>[] payload() default {};
 
-	int min() default 0;
+    int min() default 0;
 
     int max() default 100;
 }

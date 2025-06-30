@@ -69,10 +69,10 @@ public class UserControllerTest {
         Mockito.when(userService.createUser(ArgumentMatchers.any())).thenReturn(userResponse);
 
         // create a request
-        mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").contentType(MediaType.APPLICATION_JSON_VALUE).content(content))
-                .andExpect(
-                        MockMvcResultMatchers.status().isOk())
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(content))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value(200));
     }
 }

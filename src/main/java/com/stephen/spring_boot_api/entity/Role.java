@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ import lombok.Setter;
 public class Role {
     @Id
     String name;
+
     String description;
 
     // 1 role has many permissions, 1 permission thuoc nhieu roles

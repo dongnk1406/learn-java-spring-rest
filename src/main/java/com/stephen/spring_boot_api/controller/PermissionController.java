@@ -44,5 +44,4 @@ public class PermissionController {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         return apiResponse;
     }
-
 }

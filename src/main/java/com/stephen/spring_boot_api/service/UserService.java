@@ -81,26 +81,30 @@ public class UserService {
         // get user info from token using spring security context holder and return
         var context = SecurityContextHolder.getContext();
         String username = context.getAuthentication().getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user =
+                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         UserResponse userResponse = new UserResponse();
         userResponse.setUsername(user.getUsername());
         userResponse.setPassword(user.getPassword());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setDateOfBirth(user.getDateOfBirth());
-        userResponse.setRoles(user.getRoles().stream().map(role -> {
-            RoleResponse roleResponse = new RoleResponse();
-            roleResponse.setName(role.getName());
-            roleResponse.setDescription(role.getDescription());
-            roleResponse.setPermissions(role.getPermissions().stream().map(permission -> {
-                PermissionResponse permissionResponse = new PermissionResponse();
-                permissionResponse.setName(permission.getName());
-                permissionResponse.setDescription(permission.getDescription());
-                return permissionResponse;
-            }).collect(Collectors.toSet()));
-            return roleResponse;
-        }).collect(Collectors.toSet()));
+        userResponse.setRoles(user.getRoles().stream()
+                .map(role -> {
+                    RoleResponse roleResponse = new RoleResponse();
+                    roleResponse.setName(role.getName());
+                    roleResponse.setDescription(role.getDescription());
+                    roleResponse.setPermissions(role.getPermissions().stream()
+                            .map(permission -> {
+                                PermissionResponse permissionResponse = new PermissionResponse();
+                                permissionResponse.setName(permission.getName());
+                                permissionResponse.setDescription(permission.getDescription());
+                                return permissionResponse;
+                            })
+                            .collect(Collectors.toSet()));
+                    return roleResponse;
+                })
+                .collect(Collectors.toSet()));
         return userResponse;
     }
 }

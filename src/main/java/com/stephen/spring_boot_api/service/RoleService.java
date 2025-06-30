@@ -34,31 +34,37 @@ public class RoleService {
         RoleResponse response = new RoleResponse();
         response.setName(role.getName());
         response.setDescription(role.getDescription());
-        response.setPermissions(role.getPermissions().stream().map(permission -> {
-            PermissionResponse permissionResponse = new PermissionResponse();
-            permissionResponse.setName(permission.getName());
-            permissionResponse.setDescription(permission.getDescription());
-            return permissionResponse;
-        }).collect(Collectors.toSet()));
+        response.setPermissions(role.getPermissions().stream()
+                .map(permission -> {
+                    PermissionResponse permissionResponse = new PermissionResponse();
+                    permissionResponse.setName(permission.getName());
+                    permissionResponse.setDescription(permission.getDescription());
+                    return permissionResponse;
+                })
+                .collect(Collectors.toSet()));
 
         return response;
     }
 
     public List<RoleResponse> getAll() {
         var roles = roleRepository.findAll();
-        return roles.stream().map(role -> {
-            RoleResponse response = new RoleResponse();
-            response.setName(role.getName());
-            response.setDescription(role.getDescription());
-            response.setPermissions(role.getPermissions().stream().map(permission -> {
-                PermissionResponse permissionResponse = new PermissionResponse();
-                permissionResponse.setName(permission.getName());
-                permissionResponse.setDescription(permission.getDescription());
-                return permissionResponse;
-            }).collect(Collectors.toSet()));
+        return roles.stream()
+                .map(role -> {
+                    RoleResponse response = new RoleResponse();
+                    response.setName(role.getName());
+                    response.setDescription(role.getDescription());
+                    response.setPermissions(role.getPermissions().stream()
+                            .map(permission -> {
+                                PermissionResponse permissionResponse = new PermissionResponse();
+                                permissionResponse.setName(permission.getName());
+                                permissionResponse.setDescription(permission.getDescription());
+                                return permissionResponse;
+                            })
+                            .collect(Collectors.toSet()));
 
-            return response;
-        }).toList();
+                    return response;
+                })
+                .toList();
     }
 
     public void delete(String role) {

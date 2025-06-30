@@ -21,9 +21,12 @@ public class ApplicationInitConfig {
     }
 
     @Bean
-    // use ConditionalOnProperty to check condition. If the condition is true, the bean will be created 
+    // use ConditionalOnProperty to check condition. If the condition is true, the bean will be created
     // in this case, if the database is MySQL, the bean will be created
-    @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
+    @ConditionalOnProperty(
+            prefix = "spring",
+            value = "datasource.driverClassName",
+            havingValue = "com.mysql.cj.jdbc.Driver")
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
             if (userRepository.findByUsername("admin").isEmpty()) {
@@ -37,5 +40,4 @@ public class ApplicationInitConfig {
             }
         };
     }
-
 }

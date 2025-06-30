@@ -2,7 +2,6 @@ package com.stephen.spring_boot_api.configuration;
 
 import java.text.ParseException;
 import java.util.Objects;
-
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -36,16 +35,14 @@ public class CustomJwtDecoder implements JwtDecoder {
             introspectRequest.setToken(token);
             var response = authenticationService.introspect(introspectRequest);
 
-            if (!response.isValid())
-                throw new JwtException("Token invalid");
+            if (!response.isValid()) throw new JwtException("Token invalid");
         } catch (JOSEException | ParseException e) {
             throw new JwtException(e.getMessage());
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {
             SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-            nimbusJwtDecoder = NimbusJwtDecoder
-                    .withSecretKey(secretKeySpec)
+            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
                     .macAlgorithm(MacAlgorithm.HS512)
                     .build();
         }

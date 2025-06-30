@@ -31,12 +31,14 @@ public class PermissionService {
     public List<PermissionResponse> getAll() {
         var permissions = permissionRepository.findAll();
         // simple way to map using mapstruct
-        return permissions.stream().map(permission -> {
-            PermissionResponse response = new PermissionResponse();
-            response.setName(permission.getName());
-            response.setDescription(permission.getDescription());
-            return response;
-        }).toList();
+        return permissions.stream()
+                .map(permission -> {
+                    PermissionResponse response = new PermissionResponse();
+                    response.setName(permission.getName());
+                    response.setDescription(permission.getDescription());
+                    return response;
+                })
+                .toList();
     }
 
     public void delete(String permission) {

@@ -44,5 +44,4 @@ public class RoleController {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         return apiResponse;
     }
-
 }

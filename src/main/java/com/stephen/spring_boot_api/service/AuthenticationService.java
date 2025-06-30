@@ -57,7 +57,8 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticated(AuthenticationRequest request) {
-        var user = userRepository.findByUsername(request.getUsername())
+        var user = userRepository
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
@@ -74,9 +75,12 @@ public class AuthenticationService {
 
     public String generateAccessToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer("com.stephen")
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getUsername())
+                .issuer("com.stephen")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                .expirationTime(new Date(
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
@@ -123,8 +127,12 @@ public class AuthenticationService {
         SignedJWT signedJWT = SignedJWT.parse(token);
         boolean verified = signedJWT.verify(jwsVerifier);
         Date expiredTime = isRefresh
-                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
         boolean valid = verified && expiredTime.after(new Date());
 
@@ -167,13 +175,12 @@ public class AuthenticationService {
 
         // generate new access token for user
         String userName = signJwt.getJWTClaimsSet().getSubject();
-        var user = userRepository.findByUsername(userName)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user =
+                userRepository.findByUsername(userName).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         String accessToken = generateAccessToken(user);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse();
         authenticationResponse.setAccessToken(accessToken);
         authenticationResponse.setAuthenticated(true);
         return authenticationResponse;
     }
-
 }

@@ -2,6 +2,8 @@ package com.stephen.spring_boot_api.exception;
 
 import java.util.Map;
 
+import jakarta.validation.ConstraintViolation;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,8 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.stephen.spring_boot_api.dto.ApiResponse;
-
-import jakarta.validation.ConstraintViolation;
 
 // catch exception globally and global manage exception
 @ControllerAdvice
@@ -26,13 +26,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handleValidationException(MethodArgumentNotValidException exception) {
-        var constrainViolation = exception.getBindingResult().getAllErrors().get(0).unwrap(ConstraintViolation.class);
-        Map<String, Object> attributes = constrainViolation.getConstraintDescriptor().getAttributes();
+        var constrainViolation =
+                exception.getBindingResult().getAllErrors().get(0).unwrap(ConstraintViolation.class);
+        Map<String, Object> attributes =
+                constrainViolation.getConstraintDescriptor().getAttributes();
 
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         apiResponse.setMessage(
-                constrainViolation.getMessage() != null ? mapAttribute(constrainViolation.getMessage(), attributes)
+                constrainViolation.getMessage() != null
+                        ? mapAttribute(constrainViolation.getMessage(), attributes)
                         : exception.getFieldError().getDefaultMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
