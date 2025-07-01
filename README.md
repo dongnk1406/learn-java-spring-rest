@@ -79,3 +79,12 @@ https://www.youtube.com/watch?v=GAKppXwPelw&list=PL2xsxmVse9IYN20XBnf7dXUNnErtzP
 
 ### OAuth
 https://www.youtube.com/watch?v=SViY_TMa5sg&list=PL2xsxmVse9IbweCh6QKqZhousfEWabSeq
+
+## Profiles
+https://docs.spring.io/spring-boot/reference/features/profiles.html
+generate key using https://generate-random.org/
+
+With Spring Boot Maven Plugin 
+https://docs.spring.io/spring-boot/maven-plugin/using.html#using.overriding-command-line
+`mvn spring-boot:run -Dspring-boot.run.profiles=production`
+`mvn spring-boot:run -Dspring-boot.run.profiles=staging`
