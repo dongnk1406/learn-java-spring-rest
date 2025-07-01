@@ -34,6 +34,7 @@ PostAuthorize: thực hiện method, rồi mới kiểm tra, nếu thoả mãn t
 
 ## Logout flow
 - lưu token đã logout
+- ở bước verifyToken, nêú token đó đã tồn tại trong bảng invalidate-token => throw Error
 
 ## Isolation trong UnitTest, best practice trong Unit test
 Isolation là unit test có thể chạy trên bất cứ môi trường nào, mà không cần service bên ngoài
@@ -64,3 +65,17 @@ password: root
 ## Swagger
 Reference: https://www.youtube.com/watch?v=VYvqF-J2JFc
 http://localhost:8080/identity/swagger-ui/index.html
+
+## Concurrency
+
+## Unique field trong JPA và bài toán concurrent request
+
+## Race condition
+
+## Security
+
+### KeyCloak
+https://www.youtube.com/watch?v=GAKppXwPelw&list=PL2xsxmVse9IYN20XBnf7dXUNnErtzP1ov
+
+### OAuth
+https://www.youtube.com/watch?v=SViY_TMa5sg&list=PL2xsxmVse9IbweCh6QKqZhousfEWabSeq

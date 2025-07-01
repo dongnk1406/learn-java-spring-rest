@@ -3,6 +3,7 @@ package com.stephen.spring_boot_api.entity;
 import java.time.LocalDate;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,7 +18,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    // this one make username unique, use collate utf8mb4_unicode_ci
+    // to make it case insensitive like multi user request a same username
+    @Column(unique = true, name = "username", columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String username;
+
     private String password;
     private String firstName;
     private String lastName;
