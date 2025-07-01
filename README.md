@@ -20,7 +20,8 @@ This microservice is responsible for:
 `mvn spring-boot:run`
 
 ## Build application
-`mvn clean package`
+`./mvnw clean`
+`./mvnw package`
 
 ## Lombok
 - là một thư viện Java giúp sinh các mã getter & setter tự động. Bên cạnh đó còn hỗ trợ sinh các hàm khởi tạo (constructor) với tham số, hoặc không có tham số.
@@ -88,3 +89,20 @@ With Spring Boot Maven Plugin
 https://docs.spring.io/spring-boot/maven-plugin/using.html#using.overriding-command-line
 `mvn spring-boot:run -Dspring-boot.run.profiles=production`
 `mvn spring-boot:run -Dspring-boot.run.profiles=staging`
+
+## Environment variables
+https://docs.spring.io/spring-boot/reference/features/external-config.html
+https://www.youtube.com/watch?v=v2aX-gJACRw&list=PL2xsxmVse9IaxzE8Mght4CFltGOqcG6FC&index=29
+
+## Build and Deploy
+
+### Build
+`./mvnw clean`
+`./mvnw package`
+
+if you wanna ignore the unit test
+`./mvnw package -DskipTests`
+
+After the build is completed, you can the the archive in target folder
+Now you can run the .jar file
+`java -jar directoryToFile`
