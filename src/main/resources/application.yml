@@ -15,5 +15,5 @@ spring:
     show-sql: true
 jwt:
   signerKey: "2CNA6tIUosBKzREgym0LWBt9KbTFTbFuadSARDDyKo6i0RxrtDrj+s0dhaQ2b+7G"
-  valid-duration: 60 # in second, access token will be expired after 60s
-  refreshable-duration: 120 # in seconds, refresh access token will be expired after 120s
+  valid-duration: 1800 # in second, access token will be expired after 60s
+  refreshable-duration: 18000 # in seconds, refresh access token will be expired after 120s
