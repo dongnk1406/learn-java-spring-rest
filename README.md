@@ -91,11 +91,74 @@ Reference: <https://www.youtube.com/watch?v=VYvqF-J2JFc>
 
 ### KeyCloak
 
+## AOP
+
 <https://www.youtube.com/watch?v=GAKppXwPelw&list=PL2xsxmVse9IYN20XBnf7dXUNnErtzP1ov>
 
 ### OAuth
 
 <https://www.youtube.com/watch?v=SViY_TMa5sg&list=PL2xsxmVse9IbweCh6QKqZhousfEWabSeq>
+
+## Migration
+
+## Middleware
+
+Middleware functions can perform the following tasks:
+
+* execute any code.
+* make changes to the request and the response objects.
+* end the request-response cycle.
+* call the next middleware function in the stack.
+* if the current middleware function does not end the request-response cycle, it must call next() to pass control to the next middleware function.
+Otherwise, the request will be left hanging.
+
+## Validation
+
+* Schema based validation
+
+* Object schema validation
+
+* Class validator
+
+## Guard
+
+Guards are executed after all middleware, but before any interceptor or pipe.
+
+## Authentication
+
+### Role-based authentication
+
+### Refresh token
+
+## Authorization
+
+## Interceptors
+
+Interceptors have a set of useful capabilities which are inspired by the Aspect Oriented Programming (AOP) technique. They make it possible to:
+
+bind extra logic before / after method execution
+transform the result returned from a function
+transform the exception thrown from a function
+extend the basic function behavior
+completely override a function depending on specific conditions (e.g., for caching purposes)
+
+## File upload
+
+## Hashing
+
+## Microservices
+
+## CI/CD
+
+## Docker
+
+## Redis
+
+## Kafka
+
+## AWS
+
+## Monitoring
 
 ## Profiles
 
@@ -141,3 +204,15 @@ install java, maven on your machine first
 `mvn clean`
 
 `mvn package -DskipTests`
+
+#### Option 3
+
+`docker build -t archiveName .`
+
+eg: `docker build -t spring-boot-identity:0.0.1 .`
+
+then we can run the image
+
+`docker run archiveName`
+
+eg: `docker run spring-boot-identity:0.0.1`
