@@ -87,7 +87,15 @@ Reference: <https://www.youtube.com/watch?v=VYvqF-J2JFc>
 
 ## Race condition
 
+## ORM
+
+* Spring JPA
+
+* Spring JPA and Hibernate are closely related but not the same: Hibernate is an ORM implementation, while Spring JPA (often Spring Data JPA) is a higher-level abstraction built on top of JPA that can use Hibernate under the hood
+
 ## Security
+
+* Spring security
 
 ### KeyCloak
 
