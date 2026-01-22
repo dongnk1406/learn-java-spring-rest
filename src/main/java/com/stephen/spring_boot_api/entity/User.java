@@ -1,14 +1,19 @@
 package com.stephen.spring_boot_api.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -30,6 +35,29 @@ public class User {
 
     @ManyToMany
     Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Feed> feeds;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profileId")
+    private Profile profile;
+
+    public List<Feed> getFeeds() {
+        return feeds;
+    }
+
+    public void setFeeds(List<Feed> feeds) {
+        this.feeds = feeds;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
 
     public String getId() {
         return id;
