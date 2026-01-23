@@ -224,3 +224,7 @@ then we can run the image
 `docker run archiveName`
 
 eg: `docker run spring-boot-identity:0.0.1`
+
+## Send email
+
+<https://www.geeksforgeeks.org/springboot/spring-boot-sending-email-via-smtp/>
