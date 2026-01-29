@@ -83,6 +83,14 @@ Reference: <https://www.youtube.com/watch?v=VYvqF-J2JFc>
 
 ## Concurrency
 
+## Bean
+
+The @Bean annotation tells Spring that the method produces a Spring-managed bean.
+
+When the application starts, Spring calls this method, executes the configuration, and registers the returned SecurityFilterChain in the ApplicationContext.
+
+That bean is then available for dependency injection anywhere in your application.
+
 ## Unique field trong JPA và bài toán concurrent request
 
 ## Race condition
@@ -93,9 +101,13 @@ Reference: <https://www.youtube.com/watch?v=VYvqF-J2JFc>
 
 * Spring JPA and Hibernate are closely related but not the same: Hibernate is an ORM implementation, while Spring JPA (often Spring Data JPA) is a higher-level abstraction built on top of JPA that can use Hibernate under the hood
 
-## Security
+* Hibernate is a JPA implementation, while Spring Data JPA is a JPA data access abstraction. Spring Data JPA cannot work without a JPA provider.
 
-* Spring security
+## Spring security
+
+![alt text](assets/aop.png)
+
+* Spring Security filter chain is a series of standard servlet filters that work in concert to apply security logic to every incoming HttpServletRequest. Each filter has a specific responsibility (e.g., authentication, authorization), and they are executed in a defined order before the request reaches the application's main logic (like a controller).
 
 ### KeyCloak
 
@@ -228,3 +240,5 @@ eg: `docker run spring-boot-identity:0.0.1`
 ## Send email
 
 <https://www.geeksforgeeks.org/springboot/spring-boot-sending-email-via-smtp/>
+
+## Architecture (Domain driven design)
