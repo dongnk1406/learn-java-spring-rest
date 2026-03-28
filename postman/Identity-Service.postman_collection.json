@@ -1,0 +1,441 @@
+{
+  "info": {
+    "_postman_id": "8f4a2c10-9b3e-4d1f-a7c2-identity-service",
+    "name": "Identity Service",
+    "description": "REST API for the Spring Boot identity microservice (context path `/identity`).\n\n**Setup:** Import this collection, then run **Authentication → Login**. The test script saves `accessToken` to collection variables for protected routes.\n\n**Base URL:** `http://localhost:8080/identity` (override `baseUrl` if needed).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/identity"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "sampleUserId",
+      "value": "replace-with-user-uuid-after-register"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication (public)",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json.data && json.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    pm.test('Saved accessToken to collection variable', function () { pm.expect(json.data.accessToken).to.be.a('string'); });",
+                  "  }",
+                  "} catch (e) { /* non-JSON response */ }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Returns JWT `accessToken` in `data`. Default admin user may exist if DB was initialized (see ApplicationInitConfig)."
+          }
+        },
+        {
+          "name": "Introspect token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/introspect",
+            "description": "Checks whether the JWT is valid (signature, expiry, not invalidated). Response: `{ code, message, data: { valid } }`."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Invalidates the token server-side (stores JWT ID)."
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/refreshToken",
+            "description": "Sends current JWT; server invalidates it and returns a new `accessToken`. Valid within refresh window (`jwt.refreshable-duration`)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register user (public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"roles\": [\"USER\"]\n}"
+            },
+            "url": "{{baseUrl}}/users",
+            "description": "`roles` must be existing role **names** (e.g. USER, ADMIN). Only POST `/users` is public."
+          }
+        },
+        {
+          "name": "List users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users",
+            "description": "Requires `ROLE_ADMIN` (@PreAuthorize on service)."
+          }
+        },
+        {
+          "name": "Get my profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/myInfo",
+            "description": "Returns **UserResponse** directly (not wrapped in ApiResponse). Includes password hash in `password` field — treat as sensitive."
+          }
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{sampleUserId}}",
+            "description": "Admin can access any user; others only if `@PostAuthorize` allows (same username as auth)."
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newpassword12\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Updated\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"roles\": [\"USER\"]\n}"
+            },
+            "url": "{{baseUrl}}/users/{{sampleUserId}}",
+            "description": "Requires authority `UPDATE_DATA`. Returns **User** entity JSON (not ApiResponse)."
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{sampleUserId}}",
+            "description": "Returns plain string message."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "List roles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/roles"
+          }
+        },
+        {
+          "name": "Create role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"EDITOR\",\n  \"description\": \"Can edit content\",\n  \"permissions\": [\"READ_DATA\", \"UPDATE_DATA\"]\n}"
+            },
+            "url": "{{baseUrl}}/roles",
+            "description": "`permissions` are permission **names** (IDs)."
+          }
+        },
+        {
+          "name": "Delete role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/roles/EDITOR",
+            "description": "Path variable is role **name**."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "List permissions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/permissions"
+          }
+        },
+        {
+          "name": "Create permission",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"READ_DATA\",\n  \"description\": \"Read access\"\n}"
+            },
+            "url": "{{baseUrl}}/permissions"
+          }
+        },
+        {
+          "name": "Delete permission",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/permissions/READ_DATA",
+            "description": "Path variable is permission **name**."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email",
+      "item": [
+        {
+          "name": "Send email",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"recipient@example.com\",\n  \"subject\": \"Test\",\n  \"body\": \"Hello from API\",\n  \"attachment\": \"\"\n}"
+            },
+            "url": "{{baseUrl}}/email/send",
+            "description": "Requires valid SMTP config in `application.yml`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestJS proxy",
+      "item": [
+        {
+          "name": "Health check (NestJS)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/nestjs/health-check",
+            "description": "Proxies to `http://localhost:3000/health-check`. Requires NestJS running."
+          }
+        }
+      ]
+    }
+  ]
+}
