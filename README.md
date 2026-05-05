@@ -8,19 +8,21 @@ This microservice is responsible for:
 
 ## Tech stack
 
-* Build tool: maven >= 3.9.5
-* Java: 21
-* Framework: Spring boot 3.2.x
+* Build tool: maven >= 3.9.9
+* Java: 25
+* Framework: Spring boot 3.5.x
 * DBMS: MySQL
 
 ## Prerequisites
 
-* Java SDK 21
+* Java SDK 25
 * A MySQL server
 
 ## Start application
 
 `docker compose up -d`
+
+`brew install maven`
 
 `mvn install`
 
@@ -58,6 +60,10 @@ VD: hiện tại đang kết nối với CSDL bên ngoài -> vói isolation, ta 
 `mvn spotless:check`
 
 `mvn spotless:apply`
+
+> Note: on JDK 25, palantir-java-format / google-java-format do not yet support the new javac internals,
+> so spotless is not bound to the build phase. Run the commands above manually once a formatter release
+> with JDK 25 support is available (palantir-java-format > 2.68.0).
 
 ## Code coverage using JaCoCo
 

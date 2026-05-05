@@ -1,6 +1,6 @@
 # Stage 1: build
-# Start with a Maven image that includes JDK 17
-FROM maven:3.9.8-amazoncorretto-17 AS build
+# Start with a Maven image that includes JDK 25
+FROM maven:3.9.9-amazoncorretto-25 AS build
 
 # Copy source code and pom.xml file to /app folder
 WORKDIR /app
@@ -11,8 +11,8 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 #Stage 2: create image
-# Start with Amazon Correto JDK 17
-FROM amazoncorretto:17.0.15
+# Start with Amazon Correto JDK 25
+FROM amazoncorretto:25
 # Set working folder to App and copy complied file from above step
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar

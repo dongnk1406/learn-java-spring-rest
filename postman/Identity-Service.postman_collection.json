@@ -2,22 +2,48 @@
   "info": {
     "_postman_id": "8f4a2c10-9b3e-4d1f-a7c2-identity-service",
     "name": "Identity Service",
-    "description": "REST API for the Spring Boot identity microservice (context path `/identity`).\n\n**Setup:** Import this collection, then run **Authentication → Login**. The test script saves `accessToken` to collection variables for protected routes.\n\n**Base URL:** `http://localhost:8080/identity` (override `baseUrl` if needed).",
+    "description": "REST API for the Spring Boot identity microservice (context path `/identity`).\n\n**Setup:** Import this collection, then run **Authentication → Login**. The test script saves `accessToken` to collection variables for protected routes.\n\n**Base URL:** `http://localhost:8080/identity` (override `baseUrl` if needed).\n\n**Run the whole suite:** open the collection → **Run** (Postman Runner). Or via CLI: `newman run postman/Identity-Service.postman_collection.json`.\n\n**Public endpoints (no JWT):** `POST /users` (register), `POST /auth/login`, `POST /auth/introspect`, `POST /auth/logout`, `POST /auth/refreshToken`.\nEverything else needs a Bearer token (set automatically by the Login test script).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:8080/identity"
-    },
-    {
-      "key": "accessToken",
-      "value": ""
-    },
-    {
-      "key": "sampleUserId",
-      "value": "replace-with-user-uuid-after-register"
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test: every response should be JSON and arrive within 2s.",
+          "pm.test('Response time < 2000ms', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "pm.test('Content-Type is application/json', function () {",
+          "  const ct = pm.response.headers.get('Content-Type') || '';",
+          "  pm.expect(ct.toLowerCase()).to.include('application/json');",
+          "});"
+        ]
+      }
     }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/identity" },
+    { "key": "accessToken", "value": "" },
+    { "key": "username", "value": "admin" },
+    { "key": "password", "value": "admin" },
+    { "key": "newUsername", "value": "newuser_{{$randomInt}}" },
+    { "key": "newPassword", "value": "password123" },
+    { "key": "createdUserId", "value": "" },
+    { "key": "sampleUserId", "value": "" },
+    { "key": "roleName", "value": "EDITOR" },
+    { "key": "permissionName", "value": "READ_DATA" }
   ],
   "item": [
     {
@@ -29,87 +55,127 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "try {",
-                  "  var json = pm.response.json();",
-                  "  if (json.data && json.data.accessToken) {",
-                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
-                  "    pm.test('Saved accessToken to collection variable', function () { pm.expect(json.data.accessToken).to.be.a('string'); });",
-                  "  }",
-                  "} catch (e) { /* non-JSON response */ }"
-                ],
-                "type": "text/javascript"
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('ApiResponse envelope', function () {",
+                  "  pm.expect(json).to.have.property('code');",
+                  "  pm.expect(json).to.have.property('data');",
+                  "});",
+                  "pm.test('accessToken returned', function () {",
+                  "  pm.expect(json.data).to.have.property('accessToken').that.is.a('string').and.not.empty;",
+                  "  pm.expect(json.data).to.have.property('authenticated', true);",
+                  "});",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "console.log('accessToken saved to collection variable');"
+                ]
               }
             }
           ],
           "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
             },
             "url": "{{baseUrl}}/auth/login",
-            "description": "Returns JWT `accessToken` in `data`. Default admin user may exist if DB was initialized (see ApplicationInitConfig)."
+            "description": "Returns JWT `accessToken` in `data`. Default admin user is seeded by ApplicationInitConfig (admin/admin)."
           }
         },
         {
           "name": "Introspect token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('valid is boolean', function () {",
+                  "  pm.expect(json.data).to.have.property('valid').that.is.a('boolean');",
+                  "});",
+                  "pm.test('Token currently valid', function () {",
+                  "  pm.expect(json.data.valid).to.be.true;",
+                  "});"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
             },
             "url": "{{baseUrl}}/auth/introspect",
-            "description": "Checks whether the JWT is valid (signature, expiry, not invalidated). Response: `{ code, message, data: { valid } }`."
-          }
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
-            },
-            "url": "{{baseUrl}}/auth/logout",
-            "description": "Invalidates the token server-side (stores JWT ID)."
+            "description": "Verifies signature, expiry, and that the token has not been invalidated server-side."
           }
         },
         {
           "name": "Refresh token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('New accessToken returned', function () {",
+                  "  pm.expect(json.data).to.have.property('accessToken').that.is.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('New token differs from old', function () {",
+                  "  const oldToken = pm.collectionVariables.get('accessToken');",
+                  "  pm.expect(json.data.accessToken).to.not.equal(oldToken);",
+                  "});",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
             },
             "url": "{{baseUrl}}/auth/refreshToken",
-            "description": "Sends current JWT; server invalidates it and returns a new `accessToken`. Valid within refresh window (`jwt.refreshable-duration`)."
+            "description": "Server invalidates the old token and returns a fresh one. Must be within `jwt.refreshable-duration`."
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Envelope returned', function () { pm.expect(json).to.have.property('code'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{accessToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Invalidates the JWT server-side (records its JTI in `invalidated_token`)."
           }
         }
       ]
@@ -119,35 +185,95 @@
       "item": [
         {
           "name": "Register user (public)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate a unique username per run so the test is idempotent.",
+                  "pm.collectionVariables.set('newUsername', 'qa_' + Date.now());"
+                ]
               }
-            ],
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('User created with id', function () {",
+                  "  pm.expect(json.data).to.have.property('id').that.is.a('string').and.not.empty;",
+                  "  pm.expect(json.data).to.have.property('username').eq(pm.collectionVariables.get('newUsername'));",
+                  "});",
+                  "if (json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('createdUserId', json.data.id);",
+                  "  pm.collectionVariables.set('sampleUserId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"roles\": [\"USER\"]\n}"
+              "raw": "{\n  \"username\": \"{{newUsername}}\",\n  \"password\": \"{{newPassword}}\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"roles\": [\"USER\"]\n}"
             },
             "url": "{{baseUrl}}/users",
             "description": "`roles` must be existing role **names** (e.g. USER, ADMIN). Only POST `/users` is public."
           }
         },
         {
-          "name": "List users",
+          "name": "Register user — invalid (negative test)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation error returned', function () {",
+                  "  // Spring validation surfaces as the AppException envelope (non-200 code in body).",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.code).to.not.equal(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ab\",\n  \"password\": \"short\"\n}"
             },
+            "url": "{{baseUrl}}/users",
+            "description": "Username and password are too short — expects a validation error from `@Size`."
+          }
+        },
+        {
+          "name": "List users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('data is an array', function () {",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/users",
@@ -156,62 +282,74 @@
         },
         {
           "name": "Get my profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Returns username', function () {",
+                  "  pm.expect(body).to.have.property('username').that.is.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/users/myInfo",
-            "description": "Returns **UserResponse** directly (not wrapped in ApiResponse). Includes password hash in `password` field — treat as sensitive."
+            "description": "Returns **UserResponse** directly (not wrapped in ApiResponse)."
           }
         },
         {
           "name": "Get user by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 403', function () {",
+                  "  pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  pm.test('Has id', function () { pm.expect(body).to.have.property('id'); });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/users/{{sampleUserId}}",
-            "description": "Admin can access any user; others only if `@PostAuthorize` allows (same username as auth)."
+            "description": "Admin can access any user; otherwise `@PostAuthorize` only allows the user themselves."
           }
         },
         {
           "name": "Update user",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('lastName updated', function () {",
+                  "  pm.expect(body).to.have.property('lastName', 'Updated');",
+                  "});"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"password\": \"newpassword12\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Updated\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"roles\": [\"USER\"]\n}"
@@ -222,21 +360,25 @@
         },
         {
           "name": "Delete user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Confirmation message', function () {",
+                  "  pm.expect(pm.response.text()).to.include('User deleted successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/users/{{sampleUserId}}",
-            "description": "Returns plain string message."
+            "description": "Returns plain string message (not JSON) — collection-level Content-Type test will fail here; that's expected."
           }
         }
       ]
@@ -246,66 +388,67 @@
       "item": [
         {
           "name": "List roles",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/roles"
-          }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('data is an array', function () {",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/roles" }
         },
         {
           "name": "Create role",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Role created', function () {",
+                  "  pm.expect(json.data).to.have.property('name', pm.collectionVariables.get('roleName'));",
+                  "});"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"EDITOR\",\n  \"description\": \"Can edit content\",\n  \"permissions\": [\"READ_DATA\", \"UPDATE_DATA\"]\n}"
+              "raw": "{\n  \"name\": \"{{roleName}}\",\n  \"description\": \"Can edit content\",\n  \"permissions\": [\"READ_DATA\", \"UPDATE_DATA\"]\n}"
             },
             "url": "{{baseUrl}}/roles",
-            "description": "`permissions` are permission **names** (IDs)."
+            "description": "`permissions` are permission **names** (the @Id field)."
           }
         },
         {
           "name": "Delete role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/roles/EDITOR",
+            "url": "{{baseUrl}}/roles/{{roleName}}",
             "description": "Path variable is role **name**."
           }
         }
@@ -316,65 +459,66 @@
       "item": [
         {
           "name": "List permissions",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/permissions"
-          }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('data is an array', function () {",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/permissions" }
         },
         {
           "name": "Create permission",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Permission created', function () {",
+                  "  pm.expect(json.data).to.have.property('name', pm.collectionVariables.get('permissionName'));",
+                  "});"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"READ_DATA\",\n  \"description\": \"Read access\"\n}"
+              "raw": "{\n  \"name\": \"{{permissionName}}\",\n  \"description\": \"Read access\"\n}"
             },
             "url": "{{baseUrl}}/permissions"
           }
         },
         {
           "name": "Delete permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/permissions/READ_DATA",
+            "url": "{{baseUrl}}/permissions/{{permissionName}}",
             "description": "Path variable is permission **name**."
           }
         }
@@ -385,30 +529,28 @@
       "item": [
         {
           "name": "Send email",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Envelope returned', function () { pm.expect(json).to.have.property('code'); });"
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"to\": \"recipient@example.com\",\n  \"subject\": \"Test\",\n  \"body\": \"Hello from API\",\n  \"attachment\": \"\"\n}"
             },
             "url": "{{baseUrl}}/email/send",
-            "description": "Requires valid SMTP config in `application.yml`."
+            "description": "Requires valid SMTP config in `application.yml`. With placeholder SMTP this test will fail at runtime — expected."
           }
         }
       ]
@@ -418,21 +560,24 @@
       "item": [
         {
           "name": "Health check (NestJS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has message', function () { pm.expect(json).to.have.property('message'); });"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/nestjs/health-check",
-            "description": "Proxies to `http://localhost:3000/health-check`. Requires NestJS running."
+            "description": "Proxies to `http://localhost:3000/health-check`. Requires the NestJS service running."
           }
         }
       ]
